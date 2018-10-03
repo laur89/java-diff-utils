@@ -153,7 +153,7 @@ public class Chunk<T> {
         if (lines == null) {
             if (other.lines != null)
                 return false;
-        } else if (lines != other.lines)
+        } else if (!Arrays.equals(lines, other.lines))
             return false;
         if (position != other.position)
             return false;
