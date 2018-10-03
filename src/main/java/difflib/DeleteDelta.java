@@ -19,61 +19,87 @@ import java.util.List;
 
 /**
  * Describes the delete-delta between original and revised texts.
- * 
- * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
+ *
  * @param T The type of the compared elements in the 'lines'.
+ * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  */
 public class DeleteDelta<T> extends Delta<T> {
-    
-	/**
-	 * Creates a change delta with the two given chunks.
-	 * 
-	 * @param original
-	 *            The original chunk. Must not be {@code null}.
-	 * @param revised
-	 *            The original chunk. Must not be {@code null}.
-	 */
-    public DeleteDelta(Chunk<T> original, Chunk<T> revised) {
-        super(original, revised);
+
+    /**
+     * Creates a change delta with the two given chunks.
+     *
+     * @param original The original chunk. Must not be {@code null}.
+     * @param revised  The original chunk. Must not be {@code null}.
+     */
+    public DeleteDelta( Chunk<T> original, Chunk<T> revised ) {
+        super( original, revised );
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws PatchFailedException
      */
     @Override
-    public void applyTo(List<T> target) throws PatchFailedException {
-        verify(target);
+    public void applyTo( List<T> target ) throws PatchFailedException {
+        verify( target );
         int position = getOriginal().getPosition();
         int size = getOriginal().size();
-        for (int i = 0; i < size; i++) {
-            target.remove(position);
+        for ( int i = 0; i < size; i++ ) {
+            target.remove( position );
         }
     }
-    
+
+    @Override
+    public void applyTo( T[] target ) throws PatchFailedException {
+        // TODO: implement!
+        verify( target );
+        int position = getOriginal().getPosition();
+        int size = getOriginal().size();
+        for ( int i = 0; i < size; i++ ) {
+            target.remove( position );
+        }
+
+
+        System.arraycopy(target, removedIdx + 1, target, removedIdx, arr.length - 1 - removedIdx);
+        System.arraycopy(arr, removedIdx + 1, arr, removedIdx, arr.length - 1 - removedIdx);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public void restore(List<T> target) {
-        int position = this.getRevised().getPosition();
-        List<T> lines = this.getOriginal().getLines();
-        for (int i = 0; i < lines.size(); i++) {
-            target.add(position + i, lines.get(i));
-        }
+    public void restore( List<T> target ) {
+        // TODO: fixme
+        //        int position = this.getRevised().getPosition();
+        //        List<T> lines = this.getOriginal().getLines();
+        //        for (int i = 0; i < lines.size(); i++) {
+        //            target.add(position + i, lines.get(i));
+        //        }
     }
-    
+
+    @Override
+    public void restore( T[] target ) {
+        System.arraycopy( this.getOriginal().getLines(), 0,
+                target, this.getRevised().getPosition(), this.getOriginal().getLines().length);
+    }
+
     @Override
     public TYPE getType() {
         return Delta.TYPE.DELETE;
     }
-    
+
     @Override
-    public void verify(List<T> target) throws PatchFailedException {
-        getOriginal().verify(target);
+    public void verify( List<T> target ) throws PatchFailedException {
+        // TODO: fixme
+//        getOriginal().verify( target );
     }
-    
+
+    @Override
+    public void verify( T[] target ) throws PatchFailedException {
+        getOriginal().verify( target );
+    }
+
     @Override
     public String toString() {
         return "[DeleteDelta, position: " + getOriginal().getPosition() + ", lines: "

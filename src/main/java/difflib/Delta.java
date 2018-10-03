@@ -19,34 +19,34 @@ import java.util.*;
 
 /**
  * Describes the delta between original and revised texts.
- * 
+ *
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  * @param T The type of the compared elements in the 'lines'.
  */
 public abstract class Delta<T> {
-	
+
 	/** The original chunk. */
     private Chunk<T> original;
-    
+
     /** The revised chunk. */
     private Chunk<T> revised;
-    
+
     /**
      * Specifies the type of the delta.
      *
      */
     public static enum TYPE {
     	/** A change in the original. */
-        CHANGE, 
+        CHANGE,
         /** A delete from the original. */
-        DELETE, 
+        DELETE,
         /** An insert into the original. */
         INSERT
     }
-    
+
     /**
      * Construct the delta for original and revised chunks
-     * 
+     *
      * @param original Chunk describing the original text. Must not be {@code null}.
      * @param revised Chunk describing the revised text. Must not be {@code null}.
      */
@@ -60,65 +60,71 @@ public abstract class Delta<T> {
         this.original = original;
         this.revised = revised;
     }
-    
+
     /**
      * Verifies that this delta can be used to patch the given text.
-     * 
+     *
      * @param target the text to patch.
      * @throws PatchFailedException if the patch cannot be applied.
      */
     public abstract void verify(List<T> target) throws PatchFailedException;
-    
+
     /**
      * Applies this delta as the patch for a given target
-     * 
+     *
      * @param target the given target
      * @throws PatchFailedException
      */
     public abstract void applyTo(List<T> target) throws PatchFailedException;
-    
+
+    public abstract void applyTo( T[] target ) throws PatchFailedException;
+
     /**
      * Cancel this delta for a given revised text. The action is opposite to
      * patch.
-     * 
+     *
      * @param target the given revised text
      */
     public abstract void restore(List<T> target);
-    
+
+    public abstract void verify( T[] target ) throws PatchFailedException;
+
+    public abstract void restore( T[] target );
+
     /**
      * Returns the type of delta
      * @return the type enum
      */
     public abstract TYPE getType();
-    
+
     /**
      * @return The Chunk describing the original text.
      */
     public Chunk<T> getOriginal() {
         return original;
     }
-    
+
     /**
      * @param original The Chunk describing the original text to set.
      */
     public void setOriginal(Chunk<T> original) {
         this.original = original;
     }
-    
+
     /**
      * @return The Chunk describing the revised text.
      */
     public Chunk<T> getRevised() {
         return revised;
     }
-    
+
     /**
      * @param revised The Chunk describing the revised text to set.
      */
     public void setRevised(Chunk<T> revised) {
         this.revised = revised;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -127,7 +133,7 @@ public abstract class Delta<T> {
         result = prime * result + ((revised == null) ? 0 : revised.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -149,5 +155,5 @@ public abstract class Delta<T> {
             return false;
         return true;
     }
-    
+
 }
