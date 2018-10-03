@@ -33,7 +33,7 @@ import com.google.common.io.Files;
 
 /**
  * Implements the difference and patching engine
- * 
+ *
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  * @version 0.4.1
  * @param T
@@ -44,25 +44,25 @@ public class DiffUtils {
 	private static Pattern unifiedDiffChunkRe = Pattern
 			.compile("^@@\\s+-(?:(\\d+)(?:,(\\d+))?)\\s+\\+(?:(\\d+)(?:,(\\d+))?)\\s+@@$");
 
-	@Nonnull
-    public Patch<String> diff(@Nonnull File original, @Nonnull File revised) throws IOException {
-        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8));
-    }
-
-    @Nonnull
-    public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nonnull DiffAlgorithm<String> algorithm) throws IOException {
-        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), algorithm);
-    }
-
-    @Nonnull
-	public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nullable Equalizer<String> equalizer) throws IOException {
-	    return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), equalizer);
-	}
+//	@Nonnull
+//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised) throws IOException {
+//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8));
+//    }
+//
+//    @Nonnull
+//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nonnull DiffAlgorithm<String> algorithm) throws IOException {
+//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), algorithm);
+//    }
+//
+//    @Nonnull
+//	public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nullable Equalizer<String> equalizer) throws IOException {
+//	    return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), equalizer);
+//	}
 
 	/**
 	 * Computes the difference between the original and revised list of elements
 	 * with default diff algorithm
-	 * 
+	 *
 	 * @param original
 	 *            The original text. Must not be {@code null}.
 	 * @param revised
@@ -71,19 +71,19 @@ public class DiffUtils {
 	 *         revised sequences. Never {@code null}.
 	 */
     @Nonnull
-	public static <T> Patch<T> diff(List<T> original, List<T> revised) {
+	public static <T> Patch<T> diff(T[] original, T[] revised) {
 		return DiffUtils.diff(original, revised, new MyersDiff<T>());
 	}
 
 	/**
 	 * Computes the difference between the original and revised list of elements
 	 * with default diff algorithm
-	 * 
+	 *
 	 * @param original
 	 *            The original text. Must not be {@code null}.
 	 * @param revised
 	 *            The revised text. Must not be {@code null}.
-	 * 
+	 *
 	 * @param equalizer
 	 *            the equalizer object to replace the default compare algorithm
 	 *            (Object.equals). If {@code null} the default equalizer of the
@@ -104,7 +104,7 @@ public class DiffUtils {
 	/**
 	 * Computes the difference between the original and revised list of elements
 	 * with default diff algorithm
-	 * 
+	 *
 	 * @param original
 	 *            The original text. Must not be {@code null}.
 	 * @param revised
@@ -114,9 +114,35 @@ public class DiffUtils {
 	 * @return The patch describing the difference between the original and
 	 *         revised sequences. Never {@code null}.
 	 */
-    @Nonnull
-	public static <T> Patch<T> diff(List<T> original, List<T> revised,
-			DiffAlgorithm<T> algorithm) {
+	@Nonnull
+	public static <T> Patch<T> diff(T[] original, T[] revised, DiffAlgorithm<T> algorithm) {
+		if (original == null) {
+			throw new IllegalArgumentException("original must not be null");
+		}
+		if (revised == null) {
+			throw new IllegalArgumentException("revised must not be null");
+		}
+		if (algorithm == null) {
+			throw new IllegalArgumentException("algorithm must not be null");
+		}
+		return algorithm.diff(original, revised);
+	}
+
+	/**
+	 * Computes the difference between the original and revised list of elements
+	 * with default diff algorithm
+	 *
+	 * @param original
+	 *            The original text. Must not be {@code null}.
+	 * @param revised
+	 *            The revised text. Must not be {@code null}.
+	 * @param algorithm
+	 *            The diff algorithm. Must not be {@code null}.
+	 * @return The patch describing the difference between the original and
+	 *         revised sequences. Never {@code null}.
+	 */
+	@Nonnull
+	public static <T> Patch<T> diff(List<T> original, List<T> revised, DiffAlgorithm<T> algorithm) {
 		if (original == null) {
 			throw new IllegalArgumentException("original must not be null");
 		}
@@ -131,7 +157,7 @@ public class DiffUtils {
 
 	/**
 	 * Patch the original text with given patch
-	 * 
+	 *
 	 * @param original
 	 *            the original text
 	 * @param patch
@@ -148,7 +174,7 @@ public class DiffUtils {
 
 	/**
 	 * Unpatch the revised text for a given patch
-	 * 
+	 *
 	 * @param revised
 	 *            the revised text
 	 * @param patch
@@ -162,7 +188,7 @@ public class DiffUtils {
 	/**
 	 * Parse the given text in unified format and creates the list of deltas for
 	 * it.
-	 * 
+	 *
 	 * @param diff
 	 *            the text in unified format
 	 * @return the patch with deltas.
@@ -256,7 +282,7 @@ public class DiffUtils {
 	/**
 	 * generateUnifiedDiff takes a Patch and some other arguments, returning the
 	 * Unified Diff format text representing the Patch.
-	 * 
+	 *
 	 * @param original
 	 *            - Filename of the original (unrevised file)
 	 * @param revised
@@ -334,7 +360,7 @@ public class DiffUtils {
 	/**
 	 * processDeltas takes a list of Deltas and outputs them together in a
 	 * single block of Unified-Diff-format text.
-	 * 
+	 *
 	 * @param origLines
 	 *            - the lines of the original file
 	 * @param deltas
@@ -431,7 +457,7 @@ public class DiffUtils {
 	/**
 	 * getDeltaText returns the lines to be added to the Unified Diff text from
 	 * the Delta parameter
-	 * 
+	 *
 	 * @param delta
 	 *            - the Delta to output
 	 * @return list of String lines of code.
