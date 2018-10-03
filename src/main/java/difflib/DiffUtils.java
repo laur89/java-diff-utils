@@ -44,20 +44,20 @@ public class DiffUtils {
 	private static Pattern unifiedDiffChunkRe = Pattern
 			.compile("^@@\\s+-(?:(\\d+)(?:,(\\d+))?)\\s+\\+(?:(\\d+)(?:,(\\d+))?)\\s+@@$");
 
-//	@Nonnull
-//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised) throws IOException {
-//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8));
-//    }
-//
-//    @Nonnull
-//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nonnull DiffAlgorithm<String> algorithm) throws IOException {
-//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), algorithm);
-//    }
-//
-//    @Nonnull
-//	public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nullable Equalizer<String> equalizer) throws IOException {
-//	    return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), equalizer);
-//	}
+	//	@Nonnull
+	//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised) throws IOException {
+	//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8));
+	//    }
+	//
+	//    @Nonnull
+	//    public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nonnull DiffAlgorithm<String> algorithm) throws IOException {
+	//        return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), algorithm);
+	//    }
+	//
+	//    @Nonnull
+	//	public Patch<String> diff(@Nonnull File original, @Nonnull File revised, @Nullable Equalizer<String> equalizer) throws IOException {
+	//	    return diff(Files.readLines(original, Charsets.UTF_8), Files.readLines(revised, Charsets.UTF_8), equalizer);
+	//	}
 
 	/**
 	 * Computes the difference between the original and revised list of elements
@@ -70,7 +70,7 @@ public class DiffUtils {
 	 * @return The patch describing the difference between the original and
 	 *         revised sequences. Never {@code null}.
 	 */
-    @Nonnull
+	@Nonnull
 	public static <T> Patch<T> diff(T[] original, T[] revised) {
 		return DiffUtils.diff(original, revised, new MyersDiff<T>());
 	}
@@ -91,7 +91,7 @@ public class DiffUtils {
 	 * @return The patch describing the difference between the original and
 	 *         revised sequences. Never {@code null}.
 	 */
-    @Nonnull
+	@Nonnull
 	public static <T> Patch<T> diff(List<T> original, List<T> revised,
 			Equalizer<T> equalizer) {
 		if (equalizer != null) {
@@ -166,7 +166,7 @@ public class DiffUtils {
 	 * @throws PatchFailedException
 	 *             if can't apply patch
 	 */
-    @Nonnull
+	@Nonnull
 	public static <T> List<T> patch(List<T> original, Patch<T> patch)
 			throws PatchFailedException {
 		return patch.applyTo(original);
@@ -311,8 +311,8 @@ public class DiffUtils {
 
 			// code outside the if block also works for single-delta issues.
 			List<Delta<String>> deltas = new ArrayList<Delta<String>>(); // current
-																			// list
-																			// of
+			// list
+			// of
 			// Delta's to
 			// process
 			Delta<String> delta = patchDeltas.get(0);
@@ -321,10 +321,10 @@ public class DiffUtils {
 			if (patchDeltas.size() > 1) {
 				for (int i = 1; i < patchDeltas.size(); i++) {
 					int position = delta.getOriginal().getPosition(); // store
-																		// the
-																		// current
-																		// position
-																		// of
+					// the
+					// current
+					// position
+					// of
 					// the first Delta
 
 					// Check if the next Delta is too close to the current
@@ -372,86 +372,91 @@ public class DiffUtils {
 	 */
 	private static List<String> processDeltas(List<String> origLines,
 			List<Delta<String>> deltas, int contextSize) {
-		List<String> buffer = new ArrayList<String>();
-		int origTotal = 0; // counter for total lines output from Original
-		int revTotal = 0; // counter for total lines output from Original
-		int line;
+		// TODO fixme; only called from generateUnifiedDiff(), which
+		// in return is only called from tests, so we can comment out for the time being;
+		return null;
 
-		Delta<String> curDelta = deltas.get(0);
 
-		// NOTE: +1 to overcome the 0-offset Position
-		int origStart = curDelta.getOriginal().getPosition() + 1 - contextSize;
-		if (origStart < 1) {
-			origStart = 1;
-		}
-
-		int revStart = curDelta.getRevised().getPosition() + 1 - contextSize;
-		if (revStart < 1) {
-			revStart = 1;
-		}
-
-		// find the start of the wrapper context code
-		int contextStart = curDelta.getOriginal().getPosition() - contextSize;
-		if (contextStart < 0) {
-			contextStart = 0; // clamp to the start of the file
-		}
-
-		// output the context before the first Delta
-		for (line = contextStart; line < curDelta.getOriginal().getPosition(); line++) { //
-			buffer.add(" " + origLines.get(line));
-			origTotal++;
-			revTotal++;
-		}
-
-		// output the first Delta
-		buffer.addAll(getDeltaText(curDelta));
-		origTotal += curDelta.getOriginal().getLines().size();
-		revTotal += curDelta.getRevised().getLines().size();
-
-		int deltaIndex = 1;
-		while (deltaIndex < deltas.size()) { // for each of the other Deltas
-			Delta<String> nextDelta = deltas.get(deltaIndex);
-			int intermediateStart = curDelta.getOriginal().getPosition()
-					+ curDelta.getOriginal().getLines().size();
-			for (line = intermediateStart; line < nextDelta.getOriginal()
-					.getPosition(); line++) {
-				// output the code between the last Delta and this one
-				buffer.add(" " + origLines.get(line));
-				origTotal++;
-				revTotal++;
-			}
-			buffer.addAll(getDeltaText(nextDelta)); // output the Delta
-			origTotal += nextDelta.getOriginal().getLines().size();
-			revTotal += nextDelta.getRevised().getLines().size();
-			curDelta = nextDelta;
-			deltaIndex++;
-		}
-
-		// Now output the post-Delta context code, clamping the end of the file
-		contextStart = curDelta.getOriginal().getPosition()
-				+ curDelta.getOriginal().getLines().size();
-		for (line = contextStart; (line < (contextStart + contextSize))
-				&& (line < origLines.size()); line++) {
-			buffer.add(" " + origLines.get(line));
-			origTotal++;
-			revTotal++;
-		}
-
-		// Create and insert the block header, conforming to the Unified Diff
-		// standard
-		StringBuffer header = new StringBuffer();
-		header.append("@@ -");
-		header.append(origStart);
-		header.append(",");
-		header.append(origTotal);
-		header.append(" +");
-		header.append(revStart);
-		header.append(",");
-		header.append(revTotal);
-		header.append(" @@");
-		buffer.add(0, header.toString());
-
-		return buffer;
+		//		List<String> buffer = new ArrayList<String>();
+		//		int origTotal = 0; // counter for total lines output from Original
+		//		int revTotal = 0; // counter for total lines output from Original
+		//		int line;
+		//
+		//		Delta<String> curDelta = deltas.get(0);
+		//
+		//		// NOTE: +1 to overcome the 0-offset Position
+		//		int origStart = curDelta.getOriginal().getPosition() + 1 - contextSize;
+		//		if (origStart < 1) {
+		//			origStart = 1;
+		//		}
+		//
+		//		int revStart = curDelta.getRevised().getPosition() + 1 - contextSize;
+		//		if (revStart < 1) {
+		//			revStart = 1;
+		//		}
+		//
+		//		// find the start of the wrapper context code
+		//		int contextStart = curDelta.getOriginal().getPosition() - contextSize;
+		//		if (contextStart < 0) {
+		//			contextStart = 0; // clamp to the start of the file
+		//		}
+		//
+		//		// output the context before the first Delta
+		//		for (line = contextStart; line < curDelta.getOriginal().getPosition(); line++) { //
+		//			buffer.add(" " + origLines.get(line));
+		//			origTotal++;
+		//			revTotal++;
+		//		}
+		//
+		//		// output the first Delta
+		//		buffer.addAll(getDeltaText(curDelta));
+		//		origTotal += curDelta.getOriginal().getLines().size();
+		//		revTotal += curDelta.getRevised().getLines().size();
+		//
+		//		int deltaIndex = 1;
+		//		while (deltaIndex < deltas.size()) { // for each of the other Deltas
+		//			Delta<String> nextDelta = deltas.get(deltaIndex);
+		//			int intermediateStart = curDelta.getOriginal().getPosition()
+		//					+ curDelta.getOriginal().getLines().size();
+		//			for (line = intermediateStart; line < nextDelta.getOriginal()
+		//					.getPosition(); line++) {
+		//				// output the code between the last Delta and this one
+		//				buffer.add(" " + origLines.get(line));
+		//				origTotal++;
+		//				revTotal++;
+		//			}
+		//			buffer.addAll(getDeltaText(nextDelta)); // output the Delta
+		//			origTotal += nextDelta.getOriginal().getLines().size();
+		//			revTotal += nextDelta.getRevised().getLines().size();
+		//			curDelta = nextDelta;
+		//			deltaIndex++;
+		//		}
+		//
+		//		// Now output the post-Delta context code, clamping the end of the file
+		//		contextStart = curDelta.getOriginal().getPosition()
+		//				+ curDelta.getOriginal().getLines().size();
+		//		for (line = contextStart; (line < (contextStart + contextSize))
+		//				&& (line < origLines.size()); line++) {
+		//			buffer.add(" " + origLines.get(line));
+		//			origTotal++;
+		//			revTotal++;
+		//		}
+		//
+		//		// Create and insert the block header, conforming to the Unified Diff
+		//		// standard
+		//		StringBuffer header = new StringBuffer();
+		//		header.append("@@ -");
+		//		header.append(origStart);
+		//		header.append(",");
+		//		header.append(origTotal);
+		//		header.append(" +");
+		//		header.append(revStart);
+		//		header.append(",");
+		//		header.append(revTotal);
+		//		header.append(" @@");
+		//		buffer.add(0, header.toString());
+		//
+		//		return buffer;
 	}
 
 	/**
