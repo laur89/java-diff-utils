@@ -83,6 +83,22 @@ public class DiffUtils {
 	 *            The original text. Must not be {@code null}.
 	 * @param revised
 	 *            The revised text. Must not be {@code null}.
+	 * @return The patch describing the difference between the original and
+	 *         revised sequences. Never {@code null}.
+	 */
+	@Nonnull
+	public static <T> Patch<T> diff(List<T> original, List<T> revised) {
+		return DiffUtils.diff(original, revised, new MyersDiff<T>());
+	}
+
+	/**
+	 * Computes the difference between the original and revised list of elements
+	 * with default diff algorithm
+	 *
+	 * @param original
+	 *            The original text. Must not be {@code null}.
+	 * @param revised
+	 *            The revised text. Must not be {@code null}.
 	 *
 	 * @param equalizer
 	 *            the equalizer object to replace the default compare algorithm

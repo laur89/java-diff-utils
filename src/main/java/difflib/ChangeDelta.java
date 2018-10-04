@@ -15,16 +15,19 @@
  */
 package difflib;
 
+import java.lang.reflect.Array;
 import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Describes the change-delta between original and revised texts.
- * 
+ *
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  * @param T The type of the compared elements in the 'lines'.
  */
 public class ChangeDelta<T> extends Delta<T> {
-    
+
     /**
      * Creates a change delta with the two given chunks.
      * @param original The original chunk. Must not be {@code null}.
@@ -33,10 +36,10 @@ public class ChangeDelta<T> extends Delta<T> {
     public ChangeDelta(Chunk<T> original, Chunk<T>revised) {
     	super(original, revised);
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws PatchFailedException
      */
     @Override
@@ -53,7 +56,28 @@ public class ChangeDelta<T> extends Delta<T> {
             i++;
         }
     }
-    
+
+    @Override
+    public void applyTo( T[] target ) throws PatchFailedException {
+        verify(target);
+
+        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getOriginal().size() );
+
+        if ( getOriginal().getPosition() == 0 ) {  // head will be cut
+            System.arraycopy( target, getOriginal().size(), result, 0, target.length - getOriginal().size() );
+        } else if ( getOriginal().getPosition() + getOriginal().size() == target.length ) { // tail will be cut
+            System.arraycopy( target, 0, result, 0, target.length - getOriginal().size() );
+        } else {
+            System.arraycopy( target, 0, result, 0, getOriginal().getPosition() );  // copy head
+            System.arraycopy( target, getOriginal().getPosition() + getOriginal().size(),
+                    result, getOriginal().getPosition(), target.length - getOriginal().getPosition() + getOriginal().size() );
+        }
+
+        target = ArrayUtils.insert(
+                this.getOriginal().getPosition(), target, this.getRevised().getLines()
+        );
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -70,18 +94,47 @@ public class ChangeDelta<T> extends Delta<T> {
             i++;
         }
     }
-    
+
+    @Override
+    public void restore( T[] target ) {
+        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getRevised().size() );
+
+        if ( getRevised().getPosition() == 0 ) {  // head will be cut
+            System.arraycopy( target, getRevised().size(), result, 0, target.length - getRevised().size() );
+        } else if ( getRevised().getPosition() + getRevised().size() == target.length ) { // tail will be cut
+            System.arraycopy( target, 0, result, 0, target.length - getRevised().size() );
+        } else {
+            System.arraycopy( target, 0, result, 0, getRevised().getPosition() );  // copy head
+            System.arraycopy( target, getRevised().getPosition() + getRevised().size(),
+                    result, getRevised().getPosition(), target.length - getRevised().getPosition() + getRevised().size() );
+        }
+
+        target = ArrayUtils.insert(
+                this.getRevised().getPosition(), target, this.getOriginal().getLines()
+        );
+    }
+
     /**
      * {@inheritDoc}
      */
+    @Override
     public void verify(List<T> target) throws PatchFailedException {
+//        getOriginal().verify(target);
+//        if (getOriginal().getPosition() > target.size()) {
+//            throw new PatchFailedException("Incorrect patch for delta: "
+//                    + "delta original position > target size");
+//        }
+    }
+
+    @Override
+    public void verify( T[] target ) throws PatchFailedException {
         getOriginal().verify(target);
-        if (getOriginal().getPosition() > target.size()) {
+        if (getOriginal().getPosition() > target.length) {
             throw new PatchFailedException("Incorrect patch for delta: "
                     + "delta original position > target size");
         }
     }
-    
+
     @Override
     public String toString() {
         return "[ChangeDelta, position: " + getOriginal().getPosition() + ", lines: "

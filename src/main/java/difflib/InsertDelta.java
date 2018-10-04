@@ -15,10 +15,10 @@
  */
 package difflib;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.util.Arrays;
+import java.lang.reflect.Array;
 import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Describes the add-delta between original and revised texts.
@@ -87,12 +87,17 @@ public class InsertDelta<T> extends Delta<T> {
 
 	@Override
 	public void restore( T[] target ) {
-		// TODO: implement!
-//		int position = getRevised().getPosition();
-//		int size = getRevised().size();
-//		for (int i = 0; i < size; i++) {
-//			target.remove(position);
-//		}
+		final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getRevised().size() );
+
+		if ( getRevised().getPosition() == 0 ) {  // head will be cut
+			System.arraycopy( target, getRevised().size(), result, 0, target.length - getRevised().size() );
+		} else if ( getRevised().getPosition() + getRevised().size() == target.length ) { // tail will be cut
+			System.arraycopy( target, 0, result, 0, target.length - getRevised().size() );
+		} else {
+			System.arraycopy( target, 0, result, 0, getRevised().getPosition() );  // copy head
+			System.arraycopy( target, getRevised().getPosition() + getRevised().size(),
+					result, getRevised().getPosition(), target.length - getRevised().getPosition() + getRevised().size() );
+		}
 	}
 
 	@Override
