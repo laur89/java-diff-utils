@@ -15,8 +15,6 @@
  */
 package difflib;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.lang.reflect.Array;
 import java.util.List;
 
@@ -55,24 +53,19 @@ public class DeleteDelta<T> extends Delta<T> {
 
     @Override
     public void applyTo( T[] target ) throws PatchFailedException {
-        // TODO: implement!
         verify( target );
-        int position = getOriginal().getPosition();
-        int size = getOriginal().size();
-        for ( int i = 0; i < size; i++ ) {
-            target.remove( position );
-        }
 
         //final T[] result = (T[]) new Object[target.length - getOriginal().size()];
-        final T[] result = (T[]) Array.newInstance(target.getClass().getComponentType(), target.length - getOriginal().size());
+        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getOriginal().size() );
 
-        if (getOriginal().getPosition() == 0) {
-            System.arraycopy(target, getOriginal().getPosition(), result, 0, getOriginal().size());
-        } else if (getOriginal().getPosition() + getOriginal().size() == target.length) {
-            System.arraycopy(target, 0, result, getOriginal().getPosition(), getOriginal().size());
+        if ( getOriginal().getPosition() == 0 ) {  // head will be cut
+            System.arraycopy( target, getOriginal().size(), result, 0, target.length - getOriginal().size() );
+        } else if ( getOriginal().getPosition() + getOriginal().size() == target.length ) { // tail will be cut
+            System.arraycopy( target, 0, result, 0, target.length - getOriginal().size() );
         } else {
-            System.arraycopy(target, getOriginal().getPosition(), result, 0, getOriginal().size());
-            System.arraycopy(target, getOriginal().getPosition() + getOriginal().size(), result, 0, target.length);
+            System.arraycopy( target, 0, result, 0, getOriginal().getPosition() );  // copy head
+            System.arraycopy( target, getOriginal().getPosition() + getOriginal().size(),
+                    result, getOriginal().getPosition(), target.length - getOriginal().getPosition() + getOriginal().size() );
         }
     }
 
@@ -92,7 +85,7 @@ public class DeleteDelta<T> extends Delta<T> {
     @Override
     public void restore( T[] target ) {
         System.arraycopy( this.getOriginal().getLines(), 0,
-                target, this.getRevised().getPosition(), this.getOriginal().getLines().length);
+                target, this.getRevised().getPosition(), this.getOriginal().getLines().length );
     }
 
     @Override
@@ -103,7 +96,7 @@ public class DeleteDelta<T> extends Delta<T> {
     @Override
     public void verify( List<T> target ) throws PatchFailedException {
         // TODO: fixme
-//        getOriginal().verify( target );
+        //        getOriginal().verify( target );
     }
 
     @Override
