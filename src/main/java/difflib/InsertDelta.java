@@ -15,6 +15,9 @@
  */
 package difflib;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,11 +62,14 @@ public class InsertDelta<T> extends Delta<T> {
 	 *
 	 * @throws PatchFailedException
 	 */
+	// TODO: return array instead?
 	@Override
 	public void applyTo(T[] target) throws PatchFailedException {
 		verify(target);
-		System.arraycopy( this.getRevised().getLines(), 0,
-				target, this.getOriginal().getPosition(), this.getRevised().getLines().length);
+
+		target = ArrayUtils.insert(
+			this.getOriginal().getPosition(), target, this.getRevised().getLines()
+		);
 	}
 
 	/**

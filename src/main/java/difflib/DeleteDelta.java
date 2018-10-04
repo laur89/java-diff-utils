@@ -15,6 +15,9 @@
  */
 package difflib;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.lang.reflect.Array;
 import java.util.List;
 
 /**
@@ -60,9 +63,17 @@ public class DeleteDelta<T> extends Delta<T> {
             target.remove( position );
         }
 
+        //final T[] result = (T[]) new Object[target.length - getOriginal().size()];
+        final T[] result = (T[]) Array.newInstance(target.getClass().getComponentType(), target.length - getOriginal().size());
 
-        System.arraycopy(target, removedIdx + 1, target, removedIdx, arr.length - 1 - removedIdx);
-        System.arraycopy(arr, removedIdx + 1, arr, removedIdx, arr.length - 1 - removedIdx);
+        if (getOriginal().getPosition() == 0) {
+            System.arraycopy(target, getOriginal().getPosition(), result, 0, getOriginal().size());
+        } else if (getOriginal().getPosition() + getOriginal().size() == target.length) {
+            System.arraycopy(target, 0, result, getOriginal().getPosition(), getOriginal().size());
+        } else {
+            System.arraycopy(target, getOriginal().getPosition(), result, 0, getOriginal().size());
+            System.arraycopy(target, getOriginal().getPosition() + getOriginal().size(), result, 0, target.length);
+        }
     }
 
     /**

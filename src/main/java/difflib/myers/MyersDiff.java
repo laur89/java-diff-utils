@@ -406,7 +406,7 @@ public class MyersDiff<T> implements DiffAlgorithm<T> {
 
      */
     private List<T> copyOfRange( final List<T> original, final int fromIndex, final int to ) {
-        return new ArrayList<T>( original.subList( fromIndex, to ) );
+        return new ArrayList<>( original.subList( fromIndex, to ) );
     }
 
     /**
