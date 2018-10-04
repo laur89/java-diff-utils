@@ -124,7 +124,8 @@ public class MyersDiff<T> implements DiffAlgorithm<T> {
         } catch (DifferentiationFailedException e) {
             e.printStackTrace();
         }
-        return new Patch<T>();
+
+        return new Patch<>();
     }
 
     /**
@@ -139,6 +140,7 @@ public class MyersDiff<T> implements DiffAlgorithm<T> {
         if (revised == null) {
             throw new IllegalArgumentException("revised arr must not be null");
         }
+
         PathNode path;
         try {
             path = buildPath(original, revised);

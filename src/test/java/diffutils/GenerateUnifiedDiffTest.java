@@ -91,8 +91,8 @@ public class GenerateUnifiedDiffTest extends TestCase {
      * Issue 19
      */
     public void testDiffWithHeaderLineInText() {
-        List<String> original = new ArrayList<String>();
-        List<String> revised  = new ArrayList<String>();
+        List<String> original = new ArrayList<>();
+        List<String> revised  = new ArrayList<>();
 
         original.add("test line1");
         original.add("test line2");

@@ -52,8 +52,7 @@ public class Chunk<T> {
     public Chunk(@Nonnegative int position, List<T> lines) {
         checkArgument(position >= 0);
         this.position = position;
-        T[] array = (T[]) new Object[lines.size()];
-        this.lines = lines.toArray(array);
+        this.lines = lines.toArray((T[]) new Object[0]);
     }
 
     /**

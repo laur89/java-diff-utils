@@ -88,7 +88,11 @@ public class DiffUtils {
 	 */
 	@Nonnull
 	public static <T> Patch<T> diff(List<T> original, List<T> revised) {
-		return DiffUtils.diff(original, revised, new MyersDiff<T>());
+		// TODO decide fate on List-based flow
+		return DiffUtils.diff(
+				original.toArray((T[]) new Object[0]),
+				revised.toArray((T[]) new Object[0])
+		);
 	}
 
 	/**
@@ -111,10 +115,14 @@ public class DiffUtils {
 	public static <T> Patch<T> diff(List<T> original, List<T> revised,
 			Equalizer<T> equalizer) {
 		if (equalizer != null) {
-			return DiffUtils.diff(original, revised,
-					new MyersDiff<T>(equalizer));
+			return DiffUtils.diff(
+					original.toArray((T[]) new Object[0]),
+					revised.toArray((T[]) new Object[0]),
+					new MyersDiff<>(equalizer)
+			);
 		}
-		return DiffUtils.diff(original, revised, new MyersDiff<T>());
+
+		return DiffUtils.diff(original, revised );
 	}
 
 	/**
@@ -144,49 +152,37 @@ public class DiffUtils {
 		return algorithm.diff(original, revised);
 	}
 
-	/**
-	 * Computes the difference between the original and revised list of elements
-	 * with default diff algorithm
-	 *
-	 * @param original
-	 *            The original text. Must not be {@code null}.
-	 * @param revised
-	 *            The revised text. Must not be {@code null}.
-	 * @param algorithm
-	 *            The diff algorithm. Must not be {@code null}.
-	 * @return The patch describing the difference between the original and
-	 *         revised sequences. Never {@code null}.
-	 */
-	@Nonnull
-	public static <T> Patch<T> diff(List<T> original, List<T> revised, DiffAlgorithm<T> algorithm) {
-		if (original == null) {
-			throw new IllegalArgumentException("original must not be null");
-		}
-		if (revised == null) {
-			throw new IllegalArgumentException("revised must not be null");
-		}
-		if (algorithm == null) {
-			throw new IllegalArgumentException("algorithm must not be null");
-		}
-		return algorithm.diff(original, revised);
-	}
+    /**
+     * Patch the original text with given patch
+     *
+     * @param original
+     *            the original text
+     * @param patch
+     *            the given patch
+     * @return the revised text
+     * @throws PatchFailedException
+     *             if can't apply patch
+     */
+    @Nonnull
+    public static <T> List<T> patch(List<T> original, Patch<T> patch) throws PatchFailedException {
+        return patch( original.toArray( (T[]) new Object[0] ), patch );
+    }
 
-	/**
-	 * Patch the original text with given patch
-	 *
-	 * @param original
-	 *            the original text
-	 * @param patch
-	 *            the given patch
-	 * @return the revised text
-	 * @throws PatchFailedException
-	 *             if can't apply patch
-	 */
-	@Nonnull
-	public static <T> List<T> patch(List<T> original, Patch<T> patch)
-			throws PatchFailedException {
-		return patch.applyTo(original);
-	}
+    /**
+     * Patch the original text with given patch
+     *
+     * @param original
+     *            the original text
+     * @param patch
+     *            the given patch
+     * @return the revised text
+     * @throws PatchFailedException
+     *             if can't apply patch
+     */
+    @Nonnull
+    public static <T> List<T> patch(T[] original, Patch<T> patch) throws PatchFailedException {
+        return patch.applyTo(original);
+    }
 
 	/**
 	 * Unpatch the revised text for a given patch
