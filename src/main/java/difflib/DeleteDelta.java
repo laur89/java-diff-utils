@@ -24,7 +24,7 @@ import java.util.List;
  * @param T The type of the compared elements in the 'lines'.
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  */
-public class DeleteDelta<T> extends Delta<T> {
+public class DeleteDelta extends Delta {
 
     /**
      * Creates a change delta with the two given chunks.
@@ -32,7 +32,7 @@ public class DeleteDelta<T> extends Delta<T> {
      * @param original The original chunk. Must not be {@code null}.
      * @param revised  The original chunk. Must not be {@code null}.
      */
-    public DeleteDelta( Chunk<T> original, Chunk<T> revised ) {
+    public DeleteDelta( Chunk original, Chunk revised ) {
         super( original, revised );
     }
 
@@ -42,7 +42,7 @@ public class DeleteDelta<T> extends Delta<T> {
      * @throws PatchFailedException
      */
     @Override
-    public void applyTo( List<T> target ) throws PatchFailedException {
+    public void applyTo( List<Byte> target ) throws PatchFailedException {
         verify( target );
         int position = getOriginal().getPosition();
         int size = getOriginal().size();
@@ -52,11 +52,10 @@ public class DeleteDelta<T> extends Delta<T> {
     }
 
     @Override
-    public void applyTo( T[] target ) throws PatchFailedException {
+    public void applyTo( byte[] target ) throws PatchFailedException {
         verify( target );
 
-        //final T[] result = (T[]) new Object[target.length - getOriginal().size()];
-        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getOriginal().size() );
+        final byte[] result = new byte[target.length - getOriginal().size()];
 
         if ( getOriginal().getPosition() == 0 ) {  // head will be cut
             System.arraycopy( target, getOriginal().size(), result, 0, target.length - getOriginal().size() );
@@ -73,17 +72,16 @@ public class DeleteDelta<T> extends Delta<T> {
      * {@inheritDoc}
      */
     @Override
-    public void restore( List<T> target ) {
-        // TODO: fixme
-        //        int position = this.getRevised().getPosition();
-        //        List<T> lines = this.getOriginal().getLines();
-        //        for (int i = 0; i < lines.size(); i++) {
-        //            target.add(position + i, lines.get(i));
-        //        }
+    public void restore( List<Byte> target ) {
+        int position = this.getRevised().getPosition();
+        byte[] lines = this.getOriginal().getLines();
+        for (int i = 0; i < lines.length; i++) {
+            target.add(position + i, lines[i]);
+        }
     }
 
     @Override
-    public void restore( T[] target ) {
+    public void restore( byte[] target ) {
         System.arraycopy( this.getOriginal().getLines(), 0,
                 target, this.getRevised().getPosition(), this.getOriginal().getLines().length );
     }
@@ -94,13 +92,12 @@ public class DeleteDelta<T> extends Delta<T> {
     }
 
     @Override
-    public void verify( List<T> target ) throws PatchFailedException {
-        // TODO: fixme
-        //        getOriginal().verify( target );
+    public void verify( List<Byte> target ) throws PatchFailedException {
+        getOriginal().verify( target );
     }
 
     @Override
-    public void verify( T[] target ) throws PatchFailedException {
+    public void verify( byte[] target ) throws PatchFailedException {
         getOriginal().verify( target );
     }
 

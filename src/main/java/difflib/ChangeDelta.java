@@ -26,14 +26,14 @@ import org.apache.commons.lang3.ArrayUtils;
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
  * @param T The type of the compared elements in the 'lines'.
  */
-public class ChangeDelta<T> extends Delta<T> {
+public class ChangeDelta extends Delta {
 
     /**
      * Creates a change delta with the two given chunks.
      * @param original The original chunk. Must not be {@code null}.
      * @param revised The original chunk. Must not be {@code null}.
      */
-    public ChangeDelta(Chunk<T> original, Chunk<T>revised) {
+    public ChangeDelta(Chunk original, Chunk revised) {
     	super(original, revised);
     }
 
@@ -43,7 +43,7 @@ public class ChangeDelta<T> extends Delta<T> {
      * @throws PatchFailedException
      */
     @Override
-    public void applyTo(List<T> target) throws PatchFailedException {
+    public void applyTo(List<Byte> target) throws PatchFailedException {
         verify(target);
         int position = getOriginal().getPosition();
         int size = getOriginal().size();
@@ -51,17 +51,17 @@ public class ChangeDelta<T> extends Delta<T> {
             target.remove(position);
         }
         int i = 0;
-        for (T line : getRevised().getLines()) {
+        for (byte line : getRevised().getLines()) {
             target.add(position + i, line);
             i++;
         }
     }
 
     @Override
-    public void applyTo( T[] target ) throws PatchFailedException {
+    public void applyTo( byte[] target ) throws PatchFailedException {
         verify(target);
 
-        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getOriginal().size() );
+        final byte[] result = new byte[target.length - getOriginal().size()];
 
         if ( getOriginal().getPosition() == 0 ) {  // head will be cut
             System.arraycopy( target, getOriginal().size(), result, 0, target.length - getOriginal().size() );
@@ -73,6 +73,7 @@ public class ChangeDelta<T> extends Delta<T> {
                     result, getOriginal().getPosition(), target.length - getOriginal().getPosition() + getOriginal().size() );
         }
 
+        // TODO: interface would need to be changed to support returning arrays;
         target = ArrayUtils.insert(
                 this.getOriginal().getPosition(), target, this.getRevised().getLines()
         );
@@ -82,22 +83,22 @@ public class ChangeDelta<T> extends Delta<T> {
      * {@inheritDoc}
      */
     @Override
-    public void restore(List<T> target) {
+    public void restore(List<Byte> target) {
         int position = getRevised().getPosition();
         int size = getRevised().size();
         for (int i = 0; i < size; i++) {
             target.remove(position);
         }
         int i = 0;
-        for (T line : getOriginal().getLines()) {
+        for (byte line : getOriginal().getLines()) {
             target.add(position + i, line);
             i++;
         }
     }
 
     @Override
-    public void restore( T[] target ) {
-        final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getRevised().size() );
+    public void restore( byte[] target ) {
+        final byte[] result = new byte[target.length - getRevised().size()];
 
         if ( getRevised().getPosition() == 0 ) {  // head will be cut
             System.arraycopy( target, getRevised().size(), result, 0, target.length - getRevised().size() );
@@ -118,16 +119,16 @@ public class ChangeDelta<T> extends Delta<T> {
      * {@inheritDoc}
      */
     @Override
-    public void verify(List<T> target) throws PatchFailedException {
-//        getOriginal().verify(target);
-//        if (getOriginal().getPosition() > target.size()) {
-//            throw new PatchFailedException("Incorrect patch for delta: "
-//                    + "delta original position > target size");
-//        }
+    public void verify(List<Byte> target) throws PatchFailedException {
+        getOriginal().verify(target);
+        if (getOriginal().getPosition() > target.size()) {
+            throw new PatchFailedException("Incorrect patch for delta: "
+                    + "delta original position > target size");
+        }
     }
 
     @Override
-    public void verify( T[] target ) throws PatchFailedException {
+    public void verify( byte[] target ) throws PatchFailedException {
         getOriginal().verify(target);
         if (getOriginal().getPosition() > target.length) {
             throw new PatchFailedException("Incorrect patch for delta: "

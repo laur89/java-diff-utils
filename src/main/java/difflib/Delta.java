@@ -15,32 +15,43 @@
  */
 package difflib;
 
-import java.util.*;
+import java.util.List;
+
+import lombok.EqualsAndHashCode;
 
 /**
  * Describes the delta between original and revised texts.
  *
  * @author <a href="dm.naumenko@gmail.com">Dmitry Naumenko</a>
- * @param T The type of the compared elements in the 'lines'.
  */
-public abstract class Delta<T> {
+@EqualsAndHashCode
+public abstract class Delta {
 
-	/** The original chunk. */
-    private Chunk<T> original;
+    /**
+     * The original chunk.
+     */
+    private Chunk original;
 
-    /** The revised chunk. */
-    private Chunk<T> revised;
+    /**
+     * The revised chunk.
+     */
+    private Chunk revised;
 
     /**
      * Specifies the type of the delta.
-     *
      */
-    public static enum TYPE {
-    	/** A change in the original. */
+    public enum TYPE {
+        /**
+         * A change in the original.
+         */
         CHANGE,
-        /** A delete from the original. */
+        /**
+         * A delete from the original.
+         */
         DELETE,
-        /** An insert into the original. */
+        /**
+         * An insert into the original.
+         */
         INSERT
     }
 
@@ -48,51 +59,34 @@ public abstract class Delta<T> {
      * Construct the delta for original and revised chunks
      *
      * @param original Chunk describing the original text. Must not be {@code null}.
-     * @param revised Chunk describing the revised text. Must not be {@code null}.
+     * @param revised  Chunk describing the revised text. Must not be {@code null}.
      */
-    public Delta(Chunk<T> original, Chunk<T> revised) {
-    	if (original == null) {
-    		throw new IllegalArgumentException("original must not be null");
-    	}
-    	if (revised == null) {
-    		throw new IllegalArgumentException("revised must not be null");
-    	}
+    public Delta( Chunk original, Chunk revised ) {
+        if ( original == null ) {
+            throw new IllegalArgumentException( "original must not be null" );
+        } else if ( revised == null ) {
+            throw new IllegalArgumentException( "revised must not be null" );
+        }
+
         this.original = original;
         this.revised = revised;
     }
 
-    /**
-     * Verifies that this delta can be used to patch the given text.
-     *
-     * @param target the text to patch.
-     * @throws PatchFailedException if the patch cannot be applied.
-     */
-    public abstract void verify(List<T> target) throws PatchFailedException;
+    public abstract void verify( List<Byte> target ) throws PatchFailedException;
 
-    /**
-     * Applies this delta as the patch for a given target
-     *
-     * @param target the given target
-     * @throws PatchFailedException
-     */
-    public abstract void applyTo(List<T> target) throws PatchFailedException;
+    public abstract void applyTo( List<Byte> target ) throws PatchFailedException;
 
-    public abstract void applyTo( T[] target ) throws PatchFailedException;
+    public abstract void applyTo( byte[] target ) throws PatchFailedException;
 
-    /**
-     * Cancel this delta for a given revised text. The action is opposite to
-     * patch.
-     *
-     * @param target the given revised text
-     */
-    public abstract void restore(List<T> target);
+    public abstract void restore( List<Byte> target );
 
-    public abstract void verify( T[] target ) throws PatchFailedException;
+    public abstract void verify( byte[] target ) throws PatchFailedException;
 
-    public abstract void restore( T[] target );
+    public abstract void restore( byte[] target );
 
     /**
      * Returns the type of delta
+     *
      * @return the type enum
      */
     public abstract TYPE getType();
@@ -100,60 +94,29 @@ public abstract class Delta<T> {
     /**
      * @return The Chunk describing the original text.
      */
-    public Chunk<T> getOriginal() {
+    public Chunk getOriginal() {
         return original;
     }
 
     /**
      * @param original The Chunk describing the original text to set.
      */
-    public void setOriginal(Chunk<T> original) {
+    public void setOriginal( Chunk original ) {
         this.original = original;
     }
 
     /**
      * @return The Chunk describing the revised text.
      */
-    public Chunk<T> getRevised() {
+    public Chunk getRevised() {
         return revised;
     }
 
     /**
      * @param revised The Chunk describing the revised text to set.
      */
-    public void setRevised(Chunk<T> revised) {
+    public void setRevised( Chunk revised ) {
         this.revised = revised;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((original == null) ? 0 : original.hashCode());
-        result = prime * result + ((revised == null) ? 0 : revised.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Delta<T> other = (Delta) obj;
-        if (original == null) {
-            if (other.original != null)
-                return false;
-        } else if (!original.equals(other.original))
-            return false;
-        if (revised == null) {
-            if (other.revised != null)
-                return false;
-        } else if (!revised.equals(other.revised))
-            return false;
-        return true;
     }
 
 }

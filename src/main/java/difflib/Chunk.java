@@ -15,12 +15,15 @@
  */
 package difflib;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nonnegative;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Holds the information about the part of text involved in the diff process
@@ -33,38 +36,24 @@ import javax.annotation.Nonnegative;
  * differencing using this library.
  * </p>
  *
- * @author <a href="dm.naumenko@gmail.com>Dmitry Naumenko</a>
  * @param T The type of the compared elements in the 'lines'.
+ * @author <a href="dm.naumenko@gmail.com>Dmitry Naumenko</a>
  */
-public class Chunk<T> {
+@ToString
+@EqualsAndHashCode
+public class Chunk {
+
     @Nonnegative
     private final int position;
-    private T[] lines;
+    private final byte[] lines;
 
     /**
-     * Creates a chunk and saves a copy of affected lines
+     * Creates a chunk and asaves a copy of affected lines
      *
-     * @param position
-     *            the start position
-     * @param lines
-     *            the affected lines
+     * @param position the start position (zero-based numbering)
+     * @param lines    the affected lines
      */
-    public Chunk(@Nonnegative int position, List<T> lines) {
-        checkArgument(position >= 0);
-        this.position = position;
-        this.lines = lines.toArray((T[]) new Object[0]);
-    }
-
-    /**
-     * Creates a chunk and saves a copy of affected lines
-     *
-     * @param position
-     *            the start position (zero-based numbering)
-     * @param lines
-     *            the affected lines
-     */
-    public Chunk(@Nonnegative int position, T[] lines) {
-        checkArgument(position >= 0);
+    public Chunk( @Nonnegative int position, byte[] lines ) {
         this.position = position;
         this.lines = lines;
     }
@@ -73,17 +62,34 @@ public class Chunk<T> {
      * Verifies that this chunk's saved text matches the corresponding text in
      * the given sequence.
      *
-     * @param target
-     *            the sequence to verify against.
+     * @param target the sequence to verify against.
      */
-    public void verify(T[] target) throws PatchFailedException {
-        if (last() > target.length) {
-            throw new PatchFailedException("Incorrect Chunk: the position of chunk > target size");
+    public void verify( byte[] target ) throws PatchFailedException {
+        if ( last() > target.length ) {
+            throw new PatchFailedException( "Incorrect Chunk: the position of chunk > target size" );
         }
-        for (int i = 0; i < size(); i++) {
-            if (target[position + i] != lines[i]) {
+        for ( int i = 0; i < size(); i++ ) {
+            if ( target[position + i] != lines[i] ) {
                 throw new PatchFailedException(
-                        "Incorrect Chunk: the chunk content doesn't match the target");
+                        "Incorrect Chunk: the chunk content doesn't match the target" );
+            }
+        }
+    }
+
+    /**
+     * Verifies that this chunk's saved text matches the corresponding text in
+     * the given sequence.
+     *
+     * @param target the sequence to verify against.
+     */
+    public void verify( List<Byte> target ) throws PatchFailedException {
+        if ( last() > target.size() ) {
+            throw new PatchFailedException( "Incorrect Chunk: the position of chunk > target size" );
+        }
+        for ( int i = 0; i < size(); i++ ) {
+            if ( target.get( position + i ) != lines[i] ) {
+                throw new PatchFailedException(
+                        "Incorrect Chunk: the chunk content doesn't match the target" );
             }
         }
     }
@@ -96,14 +102,10 @@ public class Chunk<T> {
         return position;
     }
 
-    public void setLines(T[] lines) {
-        this.lines = lines;
-    }
-
     /**
      * @return the affected lines
      */
-    public T[] getLines() {
+    public byte[] getLines() {
         return lines;
     }
 
@@ -118,50 +120,6 @@ public class Chunk<T> {
     @Nonnegative
     public int last() {
         return getPosition() + size() - 1;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((lines == null) ? 0 : Arrays.hashCode( lines ));
-        result = prime * result + position;
-        result = prime * result + size();
-        return result;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Chunk<T> other = (Chunk) obj;
-        if (lines == null) {
-            if (other.lines != null)
-                return false;
-        } else if (!Arrays.equals(lines, other.lines))
-            return false;
-        if (position != other.position)
-            return false;
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "[position: " + position + ", size: " + size() + ", lines: " + lines + "]";
     }
 
 }

@@ -27,7 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * @param T
  *            The type of the compared elements in the 'lines'.
  */
-public class InsertDelta<T> extends Delta<T> {
+public class InsertDelta extends Delta {
 
 	/**
 	 * Creates an insert delta with the two given chunks.
@@ -37,7 +37,7 @@ public class InsertDelta<T> extends Delta<T> {
 	 * @param revised
 	 *            The original chunk. Must not be {@code null}.
 	 */
-	public InsertDelta(Chunk<T> original, Chunk<T> revised) {
+	public InsertDelta(Chunk original, Chunk revised) {
 		super(original, revised);
 	}
 
@@ -47,14 +47,14 @@ public class InsertDelta<T> extends Delta<T> {
 	 * @throws PatchFailedException
 	 */
 	@Override
-	public void applyTo(List<T> target) throws PatchFailedException {
-		// TODO: fixme
-//		verify(target);
-//		int position = this.getOriginal().getPosition();
-//		List<T> lines = this.getRevised().getLines();
-//		for (int i = 0; i < lines.size(); i++) {
-//			target.add(position + i, lines.get(i));
-//		}
+	public void applyTo(List<Byte> target) throws PatchFailedException {
+		verify(target);
+		int position = this.getOriginal().getPosition();
+		byte[] lines = this.getRevised().getLines();
+		for (int i = 0; i < lines.length; i++) {
+			// TODO: use addAll?
+			target.add(position + i, lines[i]);
+		}
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class InsertDelta<T> extends Delta<T> {
 	 */
 	// TODO: return array instead?
 	@Override
-	public void applyTo(T[] target) throws PatchFailedException {
+	public void applyTo(byte[] target) throws PatchFailedException {
 		verify(target);
 
 		target = ArrayUtils.insert(
@@ -76,7 +76,7 @@ public class InsertDelta<T> extends Delta<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void restore(List<T> target) {
+	public void restore(List<Byte> target) {
 		int position = getRevised().getPosition();
 		int size = getRevised().size();
 		for (int i = 0; i < size; i++) {
@@ -86,8 +86,8 @@ public class InsertDelta<T> extends Delta<T> {
 
 
 	@Override
-	public void restore( T[] target ) {
-		final T[] result = (T[]) Array.newInstance( target.getClass().getComponentType(), target.length - getRevised().size() );
+	public void restore( byte[] target ) {
+		final byte[] result = new byte[target.length - getRevised().size()];
 
 		if ( getRevised().getPosition() == 0 ) {  // head will be cut
 			System.arraycopy( target, getRevised().size(), result, 0, target.length - getRevised().size() );
@@ -101,7 +101,7 @@ public class InsertDelta<T> extends Delta<T> {
 	}
 
 	@Override
-	public void verify(List<T> target) throws PatchFailedException {
+	public void verify(List<Byte> target) throws PatchFailedException {
 		if (getOriginal().getPosition() > target.size()) {
 			throw new PatchFailedException("Incorrect patch for delta: "
 					+ "delta original position > target size");
@@ -109,7 +109,7 @@ public class InsertDelta<T> extends Delta<T> {
 	}
 
 	@Override
-	public void verify(T[] target) throws PatchFailedException {
+	public void verify(byte[] target) throws PatchFailedException {
 		if (getOriginal().getPosition() > target.length) {
 			throw new PatchFailedException("Incorrect patch for delta: "
 					+ "delta original position > target size");
