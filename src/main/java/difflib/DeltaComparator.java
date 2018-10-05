@@ -5,7 +5,6 @@ import java.util.Comparator;
 
 /**
  * @author mksenzov
- * @param T The type of the compared elements in the 'lines'.
  */
 public class DeltaComparator implements Comparator<Delta>, Serializable {
     private static final long serialVersionUID = 1L;
@@ -15,13 +14,12 @@ public class DeltaComparator implements Comparator<Delta>, Serializable {
     }
 
     public int compare(final Delta a, final Delta b) {
-        final int posA = a.getOriginal().getPosition();
-        final int posB = b.getOriginal().getPosition();
-        if (posA > posB) {
+        if (a.getOriginal().getPosition() > b.getOriginal().getPosition()) {
             return 1;
-        } else if (posA < posB) {
+        } else if (a.getOriginal().getPosition() < b.getOriginal().getPosition()) {
             return -1;
         }
+
         return 0;
     }
 }
